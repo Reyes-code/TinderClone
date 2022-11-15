@@ -5,7 +5,7 @@ function ChatHeader() {
     <div className='chat-container-header'>
         <div className='profile'>
             <div className='img-container'>
-                <img src='/'/>
+                <img src='/' alt="img-container"/>
             </div>
             <h3>UserName</h3>
         </div>

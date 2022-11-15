@@ -1,12 +1,16 @@
 import React from 'react'
 import {useState} from 'react'
+import axios from 'axios'
+import {useNavigate} from 'react-router-dom'
 
 const AuthModal=({setShowModal, isSignUp})=> {
 
     const[email,setEmail] = useState(null)
-    const[password] = useState(null)
-    const[confirmPassword] = useState(null)
-    const[error,setError] = useState(null)
+    const [password, setPassword] = useState(null)
+    const [confirmPassword, setConfirmPassword] = useState(null)
+    const [error, setError] = useState(null)
+
+    let navigate = useNavigate()
 
     console.log(email,password,confirmPassword)
     
@@ -14,13 +18,22 @@ const AuthModal=({setShowModal, isSignUp})=> {
         setShowModal(false)
     }
 
-    const handleSubmit =(e)=>{
+    const handleSubmit = async(e)=>{
         e.preventDefault();
         try{
             if( isSignUp && (password!==confirmPassword)){
                 setError("Passwords need to match!")
+                return
             }
-            console.log('make a post request to our database')
+            
+            console.log('posting',email,password)
+
+            const response = await axios.post('http://localhost:8000/signup', {email,password})
+
+            const succes = response.status === 201
+
+            if (succes) navigate ('/onboarding')
+            
         }catch(error){
             console.log(error)
         }
@@ -48,7 +61,7 @@ const AuthModal=({setShowModal, isSignUp})=> {
                     name = "password"
                     placeholder="Password"  
                     required = {true}  
-                    onChange={(e)=> setEmail(e.target.value)}         
+                    onChange={(e)=> setConfirmPassword(e.target.value)}         
                 />
                 {isSignUp &&<input
                     type="password" 
@@ -56,7 +69,7 @@ const AuthModal=({setShowModal, isSignUp})=> {
                     name = "password-check"
                     placeholder="Confirm password"  
                     required = {true}  
-                    onChange={(e)=> setEmail(e.target.value)}         
+                    onChange={(e)=> setPassword(e.target.value)}         
                 />}
                 <input className="secondary-button" type="submit"/>
                 <p>{error}</p>

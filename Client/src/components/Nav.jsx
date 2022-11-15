@@ -13,7 +13,7 @@ const Nav = ({minimal, authToken, setShowModal, showModal, setIsSignUp})=> {
   return (
     <nav>
       <div className="logo-container">
-        <img className ="logo" src={minimal ? colorLogo : logo}/>
+        <img className ="logo" src={minimal ? colorLogo : logo} alt="logo"/>
       </div>
       {!authToken && !minimal && <button 
       className = "nav-button"
