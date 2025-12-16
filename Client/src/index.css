@@ -36,14 +36,14 @@ body{
 }
 
 .secondary-button{
-   color: rgb(121,119,119);
+   color: rgb(0, 0, 0);
    background-color: rgb(255, 79, 79);
    font-weight: 550;
    font-size:15px;
    text-transform: uppercase;
    padding: 12px 30px;
    border-radius: 30px;
-   border: solid 2px rgb(121, 119,119);
+   border: solid 2px rgb(0, 0, 0);
    margin: 6px;
 
 }
@@ -181,6 +181,7 @@ nav .nav-button:disabled{
     margin: 0;
 }
 
+
 .onboarding form .multiple-input-container input {
     margin-right: 10px;
 }
@@ -234,6 +235,10 @@ nav .nav-button:disabled{
 
 .swipe {
     position: absolute;
+}
+
+.primary-title {
+    color: aliceblue;
 }
 
 .dashboard .card-container {

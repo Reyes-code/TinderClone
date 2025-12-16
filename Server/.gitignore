@@ -1,0 +1,6 @@
+@'
+node_modules/
+.env
+logs/
+.DS_Store
+'@ | Out-File -FilePath Server/.gitignore -Encoding UTF8

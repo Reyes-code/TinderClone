@@ -1,11 +1,21 @@
-import React from 'react'
-import TinderCard from 'react-tinder-card'
-import { useState} from 'react'
-import ChatContainer from '../components/ChatContainer'
+import React, { useState, useEffect } from 'react';
+import { useCookies } from 'react-cookie';
+import { useNavigate } from 'react-router-dom';
+import TinderCard from 'react-tinder-card';
+import ChatContainer from '../components/ChatContainer';
+import axios from 'axios';
 
 function Dashboard() {
+  const [cookies] = useCookies(['UserId', 'AuthToken']);
+  const [lastDirection, setLastDirection] = useState();
+  const [user, setUser] = useState(null);
+  const [genderedUsers, setGenderedUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
-  const characters = [
+  // Datos estáticos de respaldo
+  const staticCharacters = [
     {
       name: 'Richard Hendricks',
       url: 'https://i.imgur.com/oPj4A8u.jpg'
@@ -17,51 +27,202 @@ function Dashboard() {
     {
       name: 'Monica Hall',
       url: 'https://i.imgur.com/oPj4A8u.jpg'
-    },
-    {
-      name: 'Jared Dunn',
-      url: 'https://i.imgur.com/oPj4A8u.jpg'
-    },
-    {
-      name: 'Dinesh Chugtai',
-      url: 'https://i.imgur.com/oPj4A8u.jpg'
     }
-  ]
+  ];
 
-  
-  const [lastDirection, setLastDirection] = useState()
+  // 1. VERIFICAR AUTENTICACIÓN
+  useEffect(() => {
+    console.log("🔍 Verificando autenticación...");
+    
+    if (!cookies.UserId || !cookies.AuthToken) {
+      console.log("❌ No autenticado, redirigiendo a home...");
+      navigate('/');
+      return;
+    }
 
-  const swiped = (direction, nameToDelete) => {
-    console.log('removing: ' + nameToDelete)
-    setLastDirection(direction)
-  }
+    // Obtener datos del usuario actual
+    const fetchUserData = async () => {
+      try {
+        console.log("📡 Obteniendo datos del usuario...");
+        const userResponse = await axios.get(`http://localhost:8000/user/${cookies.UserId}`);
+        
+        if (userResponse.data.success) {
+          setUser(userResponse.data.user);
+          console.log("✅ Usuario cargado:", userResponse.data.user.email);
+          
+          // Obtener usuarios según preferencias de género
+          await fetchGenderedUsers(userResponse.data.user);
+        } else {
+          setError("No se pudieron cargar los datos del usuario");
+        }
+      } catch (err) {
+        console.error("❌ Error obteniendo usuario:", err);
+        setError("Error al cargar datos del usuario");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [cookies, navigate]);
+
+  // 2. OBTENER USUARIOS SEGÚN PREFERENCIAS DE GÉNERO
+  const fetchGenderedUsers = async (userData) => {
+    try {
+      console.log("🔍 Buscando usuarios con interés de género:", userData.gender_interest);
+      
+      // Obtener todos los usuarios
+      const response = await axios.get('http://localhost:8000/users');
+      
+      // Filtrar según preferencias (esto debería hacerse en el backend)
+      const filteredUsers = response.data.filter(otherUser => {
+        // No mostrar al usuario actual
+        if (otherUser.user_id === userData.user_id) return false;
+        
+        // Filtrar por género de interés
+        if (userData.gender_interest === 'man' && otherUser.gender_identity !== 'man') return false;
+        if (userData.gender_interest === 'woman' && otherUser.gender_identity !== 'woman') return false;
+        if (userData.gender_interest === 'everyone') {
+          // Mostrar todos excepto el mismo género si show_gender es false
+          if (!userData.show_gender && otherUser.gender_identity === userData.gender_identity) return false;
+        }
+        
+        return true;
+      });
+      
+      console.log(`✅ ${filteredUsers.length} usuarios encontrados`);
+      setGenderedUsers(filteredUsers);
+      
+    } catch (err) {
+      console.error("❌ Error obteniendo usuarios:", err);
+      // Usar datos estáticos como respaldo
+      setGenderedUsers(staticCharacters.map(char => ({
+        user_id: `static-${char.name}`,
+        first_name: char.name,
+        url: char.url,
+        about: "Usuario de ejemplo"
+      })));
+    }
+  };
+
+  // 3. MANEJAR SWIPE (like/dislike)
+  const swiped = (direction, userId) => {
+    console.log(`Swipe ${direction} para usuario: ${userId}`);
+    setLastDirection(direction);
+    
+    if (direction === 'right') {
+      // LIKE - Añadir a matches
+      handleLike(userId);
+    } else if (direction === 'left') {
+      // DISLIKE
+      handleDislike(userId);
+    }
+  };
+
+  const handleLike = async (likedUserId) => {
+    try {
+      console.log(`❤️ Like a usuario: ${likedUserId}`);
+      
+      // Aquí deberías enviar el like al backend
+      // await axios.post('http://localhost:8000/like', {
+      //   userId: cookies.UserId,
+      //   likedUserId: likedUserId
+      // });
+      
+    } catch (err) {
+      console.error("Error al registrar like:", err);
+    }
+  };
+
+  const handleDislike = async (dislikedUserId) => {
+    console.log(`👎 Dislike a usuario: ${dislikedUserId}`);
+    // Similar a handleLike
+  };
 
   const outOfFrame = (name) => {
-    console.log(name + ' left the screen!')
+    console.log(name + ' left the screen!');
+  };
+
+  // 4. MANEJAR LOGOUT
+  const handleLogout = () => {
+    // Limpiar cookies
+    document.cookie = "UserId=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "AuthToken=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "Email=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    
+    // Redirigir a home
+    navigate('/');
+  };
+
+  if (loading) {
+    return (
+      <div className="dashboard-loading">
+        <h2>Cargando Dashboard...</h2>
+        <div className="spinner"></div>
+      </div>
+    );
   }
 
+  if (error) {
+    return (
+      <div className="dashboard-error">
+        <h2>Error: {error}</h2>
+        <button onClick={() => window.location.reload()}>Reintentar</button>
+        <button onClick={handleLogout}>Cerrar sesión</button>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard">
-      <ChatContainer/>
+      {/* Chat Container con datos del usuario */}
+      <ChatContainer user={user} />
+      
+      {/* Swipe Cards */}
       <div className="swipe-container">
         <div className="card-container">
-        {characters.map((character) =>
-          <TinderCard className='swipe' key={character.name} onSwipe={(dir) => swiped(dir, character.name)} onCardLeftScreen={() => outOfFrame(character.name)}>
-            <div style={{ backgroundImage: 'url('+ character.url + ')' }} className='card'>
-              <h3>{character.name}</h3>
+          {genderedUsers.length > 0 ? (
+            genderedUsers.map((character) => (
+              <TinderCard 
+                className='swipe' 
+                key={character.user_id} 
+                onSwipe={(dir) => swiped(dir, character.user_id)} 
+                onCardLeftScreen={() => outOfFrame(character.first_name)}
+                preventSwipe={['up', 'down']}
+              >
+                <div 
+                  style={{ backgroundImage: `url(${character.url || '/default-avatar.png'})` }} 
+                  className='card'
+                >
+                  <div className="card-overlay">
+                    <h3>{character.first_name || 'Usuario'}</h3>
+                    {character.about && <p>{character.about}</p>}
+                    {character.dob_year && (
+                      <p>Edad: {new Date().getFullYear() - parseInt(character.dob_year)}</p>
+                    )}
+                  </div>
+                </div>
+              </TinderCard>
+            ))
+          ) : (
+            // Si no hay usuarios, mostrar mensaje
+            <div className="no-users-message">
+              <h3>No hay más usuarios para mostrar</h3>
+              <p>Intenta cambiar tus preferencias de búsqueda</p>
             </div>
-          </TinderCard>
-        )}
+          )}
 
-        <div className='swipe-info'>
-          {lastDirection ? <p>You Swiped {lastDirection}</p>: <p/> }
-        </div>
-
+          <div className='swipe-info'>
+            {lastDirection ? (
+              <p>You Swiped {lastDirection}</p>
+            ) : (
+              <p>Desliza a la derecha para Like ❤️ o izquierda para Dislike 👎</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;
