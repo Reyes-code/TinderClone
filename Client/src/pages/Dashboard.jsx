@@ -13,8 +13,8 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Datos estáticos de respaldo
-  /* const staticCharacters = [
+  // 📌 DATOS ESTÁTICOS DE RESPUESTO (AHORA ACTIVADOS)
+  const staticCharacters = [
     {
       name: 'Richard Hendricks',
       url: 'https://i.imgur.com/oPj4A8u.jpg'
@@ -27,7 +27,7 @@ function Dashboard() {
       name: 'Monica Hall',
       url: 'https://i.imgur.com/oPj4A8u.jpg'
     }
-  ]; */
+  ];
 
   // 1. VERIFICAR AUTENTICACIÓN
   useEffect(() => {
@@ -49,7 +49,6 @@ function Dashboard() {
           setUser(userResponse.data.user);
           console.log("✅ Usuario cargado:", userResponse.data.user.email);
           
-        
         } else {
           setError("No se pudieron cargar los datos del usuario");
         }
@@ -64,40 +63,16 @@ function Dashboard() {
     fetchUserData();
   }, [cookies, navigate]);
 
-  
-
   // 3. MANEJAR SWIPE (like/dislike)
-  const swiped = (direction, userId) => {
-    console.log(`Swipe ${direction} para usuario: ${userId}`);
+  const swiped = (direction, characterName) => {
+    console.log(`Swipe ${direction} para: ${characterName}`);
     setLastDirection(direction);
     
     if (direction === 'right') {
-      // LIKE - Añadir a matches
-      handleLike(userId);
+      console.log(`❤️ Like a: ${characterName}`);
     } else if (direction === 'left') {
-      // DISLIKE
-      handleDislike(userId);
+      console.log(`👎 Dislike a: ${characterName}`);
     }
-  };
-
-  const handleLike = async (likedUserId) => {
-    try {
-      console.log(`❤️ Like a usuario: ${likedUserId}`);
-      
-      // Aquí deberías enviar el like al backend
-      // await axios.post('http://localhost:8000/like', {
-      //   userId: cookies.UserId,
-      //   likedUserId: likedUserId
-      // });
-      
-    } catch (err) {
-      console.error("Error al registrar like:", err);
-    }
-  };
-
-  const handleDislike = async (dislikedUserId) => {
-    console.log(`👎 Dislike a usuario: ${dislikedUserId}`);
-    // Similar a handleLike
   };
 
   const outOfFrame = (name) => {
@@ -142,36 +117,27 @@ function Dashboard() {
       {/* Swipe Cards */}
       <div className="swipe-container">
         <div className="card-container">
- {/*          {genderedUsers.length > 0 ? (
-            genderedUsers.map((character) => (
-              <TinderCard 
-                className='swipe' 
-                key={character.user_id} 
-                onSwipe={(dir) => swiped(dir, character.user_id)} 
-                onCardLeftScreen={() => outOfFrame(character.first_name)}
-                preventSwipe={['up', 'down']}
+          {/* 📌 USAR DATOS ESTÁTICOS DIRECTAMENTE */}
+          {staticCharacters.map((character) => (
+            <TinderCard 
+              className='swipe' 
+              key={character.name} 
+              onSwipe={(dir) => swiped(dir, character.name)} 
+              onCardLeftScreen={() => outOfFrame(character.name)}
+              preventSwipe={['up', 'down']}
+            >
+              <div 
+                style={{ backgroundImage: `url(${character.url})` }} 
+                className='card'
               >
-                <div 
-                  style={{ backgroundImage: `url(${character.url || '/default-avatar.png'})` }} 
-                  className='card'
-                >
-                  <div className="card-overlay">
-                    <h3>{character.first_name || 'Usuario'}</h3>
-                    {character.about && <p>{character.about}</p>}
-                    {character.dob_year && (
-                      <p>Edad: {new Date().getFullYear() - parseInt(character.dob_year)}</p>
-                    )}
-                  </div>
+                <div className="card-overlay">
+                  <h3>{character.name}</h3>
+                  {/* Puedes agregar más información estática aquí si quieres */}
+                  <p>Personaje de ejemplo</p>
                 </div>
-              </TinderCard>
-            ))
-          ) : (
-            // Si no hay usuarios, mostrar mensaje */}
-            <div className="no-users-message">
-              <h3>No hay más usuarios para mostrar</h3>
-              <p>Intenta cambiar tus preferencias de búsqueda</p>
-            </div>
-          )}
+              </div>
+            </TinderCard>
+          ))}
 
           <div className='swipe-info'>
             {lastDirection ? (
