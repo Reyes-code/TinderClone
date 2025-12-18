@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
-import TinderCard from 'react-tinder-card';
 import ChatContainer from '../components/ChatContainer';
 import axios from 'axios';
 
@@ -118,26 +117,6 @@ function Dashboard() {
       <div className="swipe-container">
         <div className="card-container">
           {/* 📌 USAR DATOS ESTÁTICOS DIRECTAMENTE */}
-          {staticCharacters.map((character) => (
-            <TinderCard 
-              className='swipe' 
-              key={character.name} 
-              onSwipe={(dir) => swiped(dir, character.name)} 
-              onCardLeftScreen={() => outOfFrame(character.name)}
-              preventSwipe={['up', 'down']}
-            >
-              <div 
-                style={{ backgroundImage: `url(${character.url})` }} 
-                className='card'
-              >
-                <div className="card-overlay">
-                  <h3>{character.name}</h3>
-                  {/* Puedes agregar más información estática aquí si quieres */}
-                  <p>Personaje de ejemplo</p>
-                </div>
-              </div>
-            </TinderCard>
-          ))}
 
           <div className='swipe-info'>
             {lastDirection ? (
