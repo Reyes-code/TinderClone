@@ -50,8 +50,7 @@ function Dashboard() {
           setUser(userResponse.data.user);
           console.log("✅ Usuario cargado:", userResponse.data.user.email);
           
-          // Obtener usuarios según preferencias de género
-          await fetchGenderedUsers(userResponse.data.user);
+        
         } else {
           setError("No se pudieron cargar los datos del usuario");
         }
@@ -66,44 +65,7 @@ function Dashboard() {
     fetchUserData();
   }, [cookies, navigate]);
 
-  // 2. OBTENER USUARIOS SEGÚN PREFERENCIAS DE GÉNERO
-  const fetchGenderedUsers = async (userData) => {
-    try {
-      console.log("🔍 Buscando usuarios con interés de género:", userData.gender_interest);
-      
-      // Obtener todos los usuarios
-      const response = await axios.get('http://localhost:8000/users');
-      
-      // Filtrar según preferencias (esto debería hacerse en el backend)
-      const filteredUsers = response.data.filter(otherUser => {
-        // No mostrar al usuario actual
-        if (otherUser.user_id === userData.user_id) return false;
-        
-        // Filtrar por género de interés
-        if (userData.gender_interest === 'man' && otherUser.gender_identity !== 'man') return false;
-        if (userData.gender_interest === 'woman' && otherUser.gender_identity !== 'woman') return false;
-        if (userData.gender_interest === 'everyone') {
-          // Mostrar todos excepto el mismo género si show_gender es false
-          if (!userData.show_gender && otherUser.gender_identity === userData.gender_identity) return false;
-        }
-        
-        return true;
-      });
-      
-      console.log(`✅ ${filteredUsers.length} usuarios encontrados`);
-      setGenderedUsers(filteredUsers);
-      
-    } catch (err) {
-      console.error("❌ Error obteniendo usuarios:", err);
-      // Usar datos estáticos como respaldo
-      setGenderedUsers(staticCharacters.map(char => ({
-        user_id: `static-${char.name}`,
-        first_name: char.name,
-        url: char.url,
-        about: "Usuario de ejemplo"
-      })));
-    }
-  };
+  
 
   // 3. MANEJAR SWIPE (like/dislike)
   const swiped = (direction, userId) => {
