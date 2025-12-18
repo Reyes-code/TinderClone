@@ -9,13 +9,12 @@ function Dashboard() {
   const [cookies] = useCookies(['UserId', 'AuthToken']);
   const [lastDirection, setLastDirection] = useState();
   const [user, setUser] = useState(null);
-  const [genderedUsers, setGenderedUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   // Datos estáticos de respaldo
-  const staticCharacters = [
+  /* const staticCharacters = [
     {
       name: 'Richard Hendricks',
       url: 'https://i.imgur.com/oPj4A8u.jpg'
@@ -28,7 +27,7 @@ function Dashboard() {
       name: 'Monica Hall',
       url: 'https://i.imgur.com/oPj4A8u.jpg'
     }
-  ];
+  ]; */
 
   // 1. VERIFICAR AUTENTICACIÓN
   useEffect(() => {
@@ -143,7 +142,7 @@ function Dashboard() {
       {/* Swipe Cards */}
       <div className="swipe-container">
         <div className="card-container">
-          {genderedUsers.length > 0 ? (
+ {/*          {genderedUsers.length > 0 ? (
             genderedUsers.map((character) => (
               <TinderCard 
                 className='swipe' 
@@ -167,7 +166,7 @@ function Dashboard() {
               </TinderCard>
             ))
           ) : (
-            // Si no hay usuarios, mostrar mensaje
+            // Si no hay usuarios, mostrar mensaje */}
             <div className="no-users-message">
               <h3>No hay más usuarios para mostrar</h3>
               <p>Intenta cambiar tus preferencias de búsqueda</p>
